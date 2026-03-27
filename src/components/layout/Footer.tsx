@@ -60,7 +60,7 @@ export function Footer() {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="font-black text-2xl tracking-tighter leading-none">B.M.S. <span className="text-gold-500">COLLEGE</span></span>
+                <span className="font-black text-2xl tracking-tighter leading-none">B.M.S. <span className="text-gold-500">COLLEGE OF ENGINEERING</span></span>
                 <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 mt-1">Engineering Excellence</span>
               </div>
             </Link>

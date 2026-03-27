@@ -1,0 +1,159 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user profile information",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's full name"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["student", "faculty", "admin", "alumni"],
+          "description": "The user's role in the system"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the profile was created"
+        }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Alumni": {
+      "title": "Alumni",
+      "description": "Stores alumni specific information",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID"
+        },
+        "graduationYear": {
+          "type": "integer",
+          "description": "Year of graduation"
+        },
+        "department": {
+          "type": "string",
+          "description": "Department of study"
+        },
+        "currentCompany": {
+          "type": "string",
+          "description": "Current place of work"
+        },
+        "currentPosition": {
+          "type": "string",
+          "description": "Current job title"
+        },
+        "linkedinUrl": {
+          "type": "string",
+          "description": "LinkedIn profile URL"
+        },
+        "bio": {
+          "type": "string",
+          "description": "Short biography"
+        }
+      },
+      "required": ["uid", "graduationYear", "department"]
+    },
+    "AlumniUpdate": {
+      "title": "Alumni Update",
+      "description": "Stores updates shared by alumni",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique ID for the update"
+        },
+        "authorUid": {
+          "type": "string",
+          "description": "UID of the alumni who posted the update"
+        },
+        "authorName": {
+          "type": "string",
+          "description": "Name of the alumni"
+        },
+        "content": {
+          "type": "string",
+          "description": "Content of the update"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the update was posted"
+        }
+      },
+      "required": ["id", "authorUid", "content", "createdAt"]
+    },
+    "ExamNotice": {
+      "title": "Exam Notice",
+      "description": "Stores exam-related notices and updates",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique ID for the notice"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the notice"
+        },
+        "content": {
+          "type": "string",
+          "description": "Detailed content of the notice"
+        },
+        "department": {
+          "type": "string",
+          "description": "Department this notice belongs to (or 'all')"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the notice was published"
+        },
+        "isUrgent": {
+          "type": "boolean",
+          "description": "Whether the notice is urgent"
+        }
+      },
+      "required": ["id", "title", "content", "department", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "User profiles collection"
+    },
+    "/alumni/{alumniId}": {
+      "schema": {
+        "$ref": "#/entities/Alumni"
+      },
+      "description": "Alumni details collection"
+    },
+    "/alumniUpdates/{updateId}": {
+      "schema": {
+        "$ref": "#/entities/AlumniUpdate"
+      },
+      "description": "Alumni updates collection"
+    },
+    "/exam-notices/{noticeId}": {
+      "schema": {
+        "$ref": "#/entities/ExamNotice"
+      },
+      "description": "Exam notices collection"
+    }
+  }
+}

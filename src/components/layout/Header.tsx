@@ -44,7 +44,27 @@ const navItems = [
     ]
   },
   { name: "INNOVATION", hasDropdown: false },
-  { name: "LABS", hasDropdown: false },
+  { 
+    name: "LABS", 
+    hasDropdown: true,
+    columns: 2, // 2-column layout for better visibility
+    dropdownItems: [
+      /* Innovative / Propel Labs */
+      "Robotics & Embedded Systems (Propel-1)",
+      "3D Printing Lab (Propel-2)",
+      "Aerospace Lab (Propel-3)",
+      "Bullz Racing (Propel-4)",
+      "Centre of Excellence in IoT",
+      "Product Innovation Lab",
+      /* Main Centralized Labs */
+      "MOOC's Lab",
+      "Language Lab",
+      "Industrial Competency Lab",
+      "Data Center",
+      "SEM/XRD Lab",
+      "Abrasive Water Jet Cutting Lab"
+    ]
+  },
   { name: "COE", hasDropdown: false },
   { name: "TEQIP", hasDropdown: false },
   { 

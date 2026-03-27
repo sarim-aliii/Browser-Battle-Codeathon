@@ -82,7 +82,7 @@ export function Header() {
               <div className="relative">
                 <div className="absolute inset-0 bg-gold-500 blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500 rounded-full" />
                 <img 
-                  src="https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/BMS_College_of_Engineering.svg/1200px-BMS_College_of_Engineering.svg.png" 
+                  src="https://upload.wikimedia.org/wikipedia/en/thumb/8/87/BMS_College_of_Engineering.svg/960px-BMS_College_of_Engineering.svg.png" 
                   alt="BMSCE Logo" 
                   className="h-14 w-14 mr-4 object-contain relative z-10 transition-transform duration-500 group-hover:scale-110"
                   referrerPolicy="no-referrer"
@@ -90,7 +90,7 @@ export function Header() {
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-2xl md:text-3xl text-navy-900 dark:text-white leading-none tracking-tighter">
-                  B.M.S. <span className="text-gold-500">College</span>
+                  B.M.S. <span className="text-gold-500">College of Engineering</span>
                 </span>
                 <span className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 uppercase tracking-[0.3em] font-bold mt-1">Engineering • Innovation • Excellence</span>
               </div>

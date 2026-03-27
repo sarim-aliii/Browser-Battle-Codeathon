@@ -276,7 +276,7 @@ export function LoginPage() {
       <header className="py-4 px-8 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
         <Link to="/" className="flex items-center text-[22px] font-bold text-[#0a2351] dark:text-white tracking-tight">
           <img 
-            src="https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/BMS_College_of_Engineering.svg/1200px-BMS_College_of_Engineering.svg.png" 
+            src="https://upload.wikimedia.org/wikipedia/en/thumb/8/87/BMS_College_of_Engineering.svg/960px-BMS_College_of_Engineering.svg.png" 
             alt="BMSCE Logo" 
             className="h-8 w-8 mr-2 object-contain"
             referrerPolicy="no-referrer"

@@ -53,7 +53,7 @@ export function Footer() {
               <div className="relative">
                 <div className="absolute inset-0 bg-gold-500 blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-full" />
                 <img 
-                  src="https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/BMS_College_of_Engineering.svg/1200px-BMS_College_of_Engineering.svg.png" 
+                  src="https://upload.wikimedia.org/wikipedia/en/thumb/8/87/BMS_College_of_Engineering.svg/960px-BMS_College_of_Engineering.svg.png" 
                   alt="BMSCE Logo" 
                   className="h-16 w-16 mr-4 object-contain group-hover:scale-110 transition-transform duration-500 relative z-10"
                   referrerPolicy="no-referrer"

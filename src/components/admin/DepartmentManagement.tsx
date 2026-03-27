@@ -1,7 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-import { Loader2, Building2, Plus, Edit2, Trash2, X, Check } from "lucide-react";
+import { Loader2, Building2, Plus, Edit2, Trash2, X, Check, Users, AlignLeft, AlertCircle } from "lucide-react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { motion, AnimatePresence } from "motion/react";
+import { Magnetic } from "../ui/Magnetic"; // Ensure this path is correct
 
 interface Department {
   id: string;
@@ -16,6 +20,7 @@ export function DepartmentManagement() {
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   const [formData, setFormData] = useState({ name: "", facultyLead: "", description: "" });
 
@@ -82,135 +87,236 @@ export function DepartmentManagement() {
     setIsAdding(false);
   };
 
+  // GSAP Animation for staggered card entrance
+  useGSAP(() => {
+    if (!loading && departments.length > 0) {
+      gsap.fromTo('.dept-card',
+        { opacity: 0, scale: 0.95, y: 20 },
+        { 
+          opacity: 1, 
+          scale: 1, 
+          y: 0, 
+          stagger: 0.08, 
+          duration: 0.5, 
+          ease: "back.out(1.2)",
+          overwrite: true
+        }
+      );
+    }
+  }, { dependencies: [departments, loading], scope: containerRef });
+
   if (loading) {
-    return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-emerald-500" /></div>;
+    return (
+      <div className="flex flex-col items-center justify-center p-12 h-[60vh]">
+        <Loader2 className="h-10 w-10 animate-spin text-gold-500 mb-4" />
+        <p className="text-gray-500 dark:text-gray-400 font-medium animate-pulse">Loading departments...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-4 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg">{error}</div>;
+    return (
+      <div className="p-6 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center">
+        <AlertCircle className="w-6 h-6 mr-3" />
+        <span className="font-semibold">{error}</span>
+      </div>
+    );
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-      <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+    <div ref={containerRef} className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-200 dark:border-white/10 overflow-hidden relative">
+      
+      {/* Subtle Background Glow */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-gold-500/5 blur-[120px] rounded-full pointer-events-none" />
+
+      {/* Header Section */}
+      <div className="p-6 md:p-8 border-b border-gray-200 dark:border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center">
-            <Building2 className="mr-2 h-5 w-5 text-emerald-500" />
+          <h2 className="text-2xl font-black text-navy-900 dark:text-white flex items-center group">
+            <div className="w-10 h-10 rounded-xl bg-gold-500/10 flex items-center justify-center mr-3 transition-transform group-hover:scale-110 group-hover:rotate-6">
+              <Building2 className="h-5 w-5 text-gold-500" />
+            </div>
             Academic Departments
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage university departments and assign faculty leads.
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-medium">
+            Manage university departments and assign faculty leadership.
           </p>
         </div>
-        <button
-          onClick={() => { setIsAdding(true); setEditingId(null); setFormData({ name: "", facultyLead: "", description: "" }); }}
-          className="flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors text-sm font-medium"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Department
-        </button>
+        
+        <Magnetic intensity={0.2}>
+          <button
+            onClick={() => { setIsAdding(true); setEditingId(null); setFormData({ name: "", facultyLead: "", description: "" }); }}
+            className="flex items-center justify-center px-6 py-2.5 bg-gold-500 hover:bg-gold-400 text-navy-900 rounded-xl transition-all shadow-lg hover:shadow-gold-500/30 text-sm font-bold whitespace-nowrap group w-full md:w-auto"
+          >
+            <Plus className="w-4 h-4 mr-2 transition-transform group-hover:rotate-90" />
+            Add Department
+          </button>
+        </Magnetic>
       </div>
 
-      <div className="p-6">
-        {isAdding && (
-          <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Add New Department</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Department Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                  placeholder="e.g. Computer Science"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Faculty Lead</label>
-                <input
-                  type="text"
-                  value={formData.facultyLead}
-                  onChange={(e) => setFormData({ ...formData, facultyLead: e.target.value })}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                  placeholder="e.g. Dr. Alan Turing"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                  placeholder="Brief description of the department..."
-                  rows={2}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end space-x-2">
-              <button onClick={() => setIsAdding(false)} className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">Cancel</button>
-              <button onClick={handleAdd} disabled={!formData.name} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center">
-                <Check className="w-4 h-4 mr-2" /> Save
-              </button>
-            </div>
-          </div>
-        )}
+      <div className="p-6 md:p-8 relative z-10">
+        
+        {/* Animated Form Expansion using Framer Motion */}
+        <AnimatePresence>
+          {isAdding && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0, y: -10 }}
+              animate={{ height: "auto", opacity: 1, y: 0 }}
+              exit={{ height: 0, opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="mb-8 p-6 md:p-8 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-200 dark:border-white/10 shadow-inner">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-navy-900 dark:text-white flex items-center">
+                    <Building2 className="w-5 h-5 mr-2 text-gold-500" />
+                    Create New Department
+                  </h3>
+                </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Department Name</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full p-3 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-slate-900 text-navy-900 dark:text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-shadow"
+                      placeholder="e.g. Computer Science"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Faculty Lead</label>
+                    <input
+                      type="text"
+                      value={formData.facultyLead}
+                      onChange={(e) => setFormData({ ...formData, facultyLead: e.target.value })}
+                      className="w-full p-3 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-slate-900 text-navy-900 dark:text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-shadow"
+                      placeholder="e.g. Dr. Alan Turing"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Description</label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      className="w-full p-3 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-slate-900 text-navy-900 dark:text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-shadow"
+                      placeholder="Brief description of the department's focus and goals..."
+                      rows={3}
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-white/10">
+                  <button onClick={() => setIsAdding(false)} className="px-6 py-2.5 text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl transition-colors">
+                    Cancel
+                  </button>
+                  <Magnetic intensity={0.1}>
+                    <button onClick={handleAdd} disabled={!formData.name} className="px-8 py-2.5 bg-gold-500 hover:bg-gold-400 text-navy-900 font-bold rounded-xl transition-all disabled:opacity-50 flex items-center shadow-lg hover:shadow-gold-500/30">
+                      <Check className="w-5 h-5 mr-2" /> Save Department
+                    </button>
+                  </Magnetic>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Department Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {departments.map((dep) => (
-            <div key={dep.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div key={dep.id} className="dept-card bg-white dark:bg-slate-800/80 border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-md hover:shadow-xl hover:border-gold-500/30 transition-all duration-300 group flex flex-col">
+              
+              {/* Inline Edit Mode */}
               {editingId === dep.id ? (
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
-                    placeholder="Department Name"
-                  />
-                  <input
-                    type="text"
-                    value={formData.facultyLead}
-                    onChange={(e) => setFormData({ ...formData, facultyLead: e.target.value })}
-                    className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
-                    placeholder="Faculty Lead"
-                  />
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
-                    placeholder="Description"
-                    rows={2}
-                  />
-                  <div className="flex justify-end space-x-2 pt-2">
-                    <button onClick={() => setEditingId(null)} className="p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md"><X className="w-4 h-4" /></button>
-                    <button onClick={() => handleUpdate(dep.id)} className="p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-md"><Check className="w-4 h-4" /></button>
+                <div className="space-y-4 flex-grow flex flex-col">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Name</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full p-2.5 border border-gray-200 dark:border-white/10 rounded-lg bg-gray-50 dark:bg-slate-900 text-navy-900 dark:text-white text-sm focus:ring-2 focus:ring-gold-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Lead</label>
+                    <input
+                      type="text"
+                      value={formData.facultyLead}
+                      onChange={(e) => setFormData({ ...formData, facultyLead: e.target.value })}
+                      className="w-full p-2.5 border border-gray-200 dark:border-white/10 rounded-lg bg-gray-50 dark:bg-slate-900 text-navy-900 dark:text-white text-sm focus:ring-2 focus:ring-gold-500 outline-none"
+                    />
+                  </div>
+                  <div className="flex-grow">
+                    <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Description</label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      className="w-full p-2.5 border border-gray-200 dark:border-white/10 rounded-lg bg-gray-50 dark:bg-slate-900 text-navy-900 dark:text-white text-sm focus:ring-2 focus:ring-gold-500 outline-none resize-none"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-2 pt-3 border-t border-gray-100 dark:border-white/10 mt-auto">
+                    <button onClick={() => setEditingId(null)} className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"><X className="w-4 h-4" /></button>
+                    <button onClick={() => handleUpdate(dep.id)} className="p-2 text-navy-900 bg-gold-500 hover:bg-gold-400 rounded-lg transition-colors shadow-lg"><Check className="w-4 h-4" /></button>
                   </div>
                 </div>
               ) : (
-                <>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">{dep.name}</h3>
-                    <div className="flex space-x-1">
-                      <button onClick={() => startEdit(dep)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-md transition-colors"><Edit2 className="w-4 h-4" /></button>
-                      <button onClick={() => handleDelete(dep.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors"><Trash2 className="w-4 h-4" /></button>
+                /* Standard Display Mode */
+                <div className="flex flex-col h-full">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center mr-3 group-hover:bg-gold-500/10 transition-colors">
+                        <Building2 className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gold-500 transition-colors" />
+                      </div>
+                      <h3 className="text-lg font-black tracking-tight text-navy-900 dark:text-white line-clamp-2">{dep.name}</h3>
+                    </div>
+                    
+                    {/* Actions (fade in on hover) */}
+                    <div className="flex space-x-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => startEdit(dep)} className="p-2 text-gray-400 hover:text-gold-500 hover:bg-gold-50 dark:hover:bg-gold-500/10 rounded-lg transition-all" title="Edit">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDelete(dep.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" title="Delete">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                  <div className="mb-3">
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Faculty Lead</span>
-                    <p className="text-sm text-slate-700 dark:text-slate-300">{dep.facultyLead || "Not assigned"}</p>
+
+                  <div className="space-y-4 flex-grow">
+                    <div className="bg-gray-50 dark:bg-slate-900/50 rounded-xl p-3 border border-gray-100 dark:border-white/5">
+                      <div className="flex items-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                        <Users className="w-3 h-3 mr-1.5 text-gold-500" /> Faculty Lead
+                      </div>
+                      <p className="text-sm font-semibold text-navy-900 dark:text-gray-200">{dep.facultyLead || "Not assigned"}</p>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                        <AlignLeft className="w-3 h-3 mr-1.5 text-gold-500" /> Description
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 leading-relaxed">
+                        {dep.description || "No description provided."}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Description</span>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">{dep.description || "No description provided."}</p>
-                  </div>
-                </>
+                </div>
               )}
             </div>
           ))}
+          
+          {/* Empty State */}
           {departments.length === 0 && !isAdding && (
-            <div className="col-span-full p-8 text-center text-slate-500 dark:text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-              No departments found. Click "Add Department" to create one.
+            <div className="col-span-full py-16 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-white/10 rounded-3xl bg-gray-50/50 dark:bg-slate-800/30">
+              <div className="w-16 h-16 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center mb-4">
+                <Building2 className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-bold text-navy-900 dark:text-white mb-2">No Departments Yet</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-6 text-center max-w-sm">Start building your academic structure by adding your first department.</p>
+              <button onClick={() => setIsAdding(true)} className="text-gold-500 font-bold hover:underline flex items-center">
+                <Plus className="w-4 h-4 mr-1" /> Add First Department
+              </button>
             </div>
           )}
         </div>

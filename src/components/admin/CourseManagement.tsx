@@ -1,9 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-import { Loader2, BookOpen, Plus, Edit2, Trash2, X, Check, Search } from "lucide-react";
+import { Loader2, BookOpen, Plus, Edit2, Trash2, X, Check, Search, AlertCircle } from "lucide-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { motion, AnimatePresence } from "motion/react";
+import { Magnetic } from "../ui/Magnetic"; // Make sure this path is correct
 
 interface Course {
   id: string;
@@ -29,6 +33,7 @@ export function CourseManagement() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
   
   const [formData, setFormData] = useState({ 
     code: "", 
@@ -136,170 +141,273 @@ export function CourseManagement() {
     });
   }, [courses, searchQuery, departments]);
 
+  // GSAP Animation for Table Rows
+  useGSAP(() => {
+    gsap.fromTo('.course-row',
+      { opacity: 0, y: 15 },
+      { 
+        opacity: 1, 
+        y: 0, 
+        stagger: 0.05, 
+        duration: 0.4, 
+        ease: "power2.out",
+        overwrite: true 
+      }
+    );
+  }, { dependencies: [filteredCourses, loading], scope: containerRef });
+
   if (loading) {
-    return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-indigo-500" /></div>;
+    return (
+      <div className="flex flex-col items-center justify-center p-12 h-[60vh]">
+        <Loader2 className="h-10 w-10 animate-spin text-gold-500 mb-4" />
+        <p className="text-gray-500 dark:text-gray-400 font-medium animate-pulse">Loading curriculum data...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-4 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg">{error}</div>;
+    return (
+      <div className="p-6 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center">
+        <AlertCircle className="w-6 h-6 mr-3" />
+        <span className="font-semibold">{error}</span>
+      </div>
+    );
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-      <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div ref={containerRef} className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-200 dark:border-white/10 overflow-hidden relative">
+      
+      {/* Subtle Background Glow */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gold-500/5 blur-[100px] rounded-full pointer-events-none" />
+
+      {/* Header Section */}
+      <div className="p-6 md:p-8 border-b border-gray-200 dark:border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center">
-            <BookOpen className="mr-2 h-5 w-5 text-indigo-500" />
+          <h2 className="text-2xl font-black text-navy-900 dark:text-white flex items-center group">
+            <div className="w-10 h-10 rounded-xl bg-gold-500/10 flex items-center justify-center mr-3 transition-transform group-hover:scale-110">
+              <BookOpen className="h-5 w-5 text-gold-500" />
+            </div>
             Course Management
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage course catalog and department assignments.
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-medium">
+            Manage course catalog and department assignments securely.
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <div className="relative w-full sm:w-64">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-slate-400" />
-            </div>
+        
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
+          {/* Enhanced Search Input */}
+          <div className="relative group/search w-full sm:w-72">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 transition-colors group-focus-within/search:text-gold-500" />
             <input
               type="text"
-              placeholder="Search courses..."
+              placeholder="Search by code, title..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="pl-11 pr-4 py-2.5 w-full border border-gray-200 dark:border-white/10 rounded-xl bg-gray-50 dark:bg-slate-800 text-navy-900 dark:text-white text-sm focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500 outline-none transition-all shadow-sm"
             />
           </div>
-          <button
-            onClick={() => { setIsAdding(true); setEditingId(null); setFormData({ code: "", title: "", departmentId: "", credits: 3, description: "", prerequisites: "", learningOutcomes: "" }); }}
-            className="flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Course
-          </button>
+          
+          {/* Add Course Button with Magnetic Pull */}
+          <Magnetic intensity={0.2}>
+            <button
+              onClick={() => { setIsAdding(true); setEditingId(null); setFormData({ code: "", title: "", departmentId: "", credits: 3, description: "", prerequisites: "", learningOutcomes: "" }); }}
+              className="flex items-center justify-center px-6 py-2.5 bg-gold-500 hover:bg-gold-400 text-navy-900 rounded-xl transition-all shadow-lg hover:shadow-gold-500/30 text-sm font-bold whitespace-nowrap group"
+            >
+              <Plus className="w-4 h-4 mr-2 transition-transform group-hover:rotate-90" />
+              Add Course
+            </button>
+          </Magnetic>
         </div>
       </div>
 
-      <div className="p-6">
-        {(isAdding || editingId) && (
-          <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-              {editingId ? "Edit Course" : "Add New Course"}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Course Code</label>
-                <input
-                  type="text"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                  placeholder="e.g. CS101"
-                />
-              </div>
-              <div className="lg:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Course Title</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                  placeholder="e.g. Intro to Computer Science"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Credits</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="6"
-                  value={formData.credits}
-                  onChange={(e) => setFormData({ ...formData, credits: parseInt(e.target.value) || 0 })}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                />
-              </div>
-              <div className="md:col-span-2 lg:col-span-4">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Department</label>
-                <select
-                  value={formData.departmentId}
-                  onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                >
-                  <option value="">Select a department...</option>
-                  {departments.map(d => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="md:col-span-2 lg:col-span-4">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prerequisites</label>
-                <input
-                  type="text"
-                  value={formData.prerequisites}
-                  onChange={(e) => setFormData({ ...formData, prerequisites: e.target.value })}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                  placeholder="e.g. CS100 or equivalent"
-                />
-              </div>
-              <div className="md:col-span-2 lg:col-span-4">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Learning Outcomes</label>
-                <textarea
-                  value={formData.learningOutcomes}
-                  onChange={(e) => setFormData({ ...formData, learningOutcomes: e.target.value })}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white h-24"
-                  placeholder="List the learning outcomes..."
-                />
-              </div>
-              <div className="md:col-span-2 lg:col-span-4">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Course Description & Syllabus</label>
-                <div className="bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600">
-                  <ReactQuill 
-                    theme="snow" 
-                    value={formData.description} 
-                    onChange={(val) => setFormData({ ...formData, description: val })}
-                    className="h-48 mb-12 text-slate-900 dark:text-white"
-                  />
+      <div className="p-6 md:p-8 relative z-10">
+        {/* Animated Form Expansion using Framer Motion */}
+        <AnimatePresence>
+          {(isAdding || editingId) && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0, y: -20 }}
+              animate={{ height: "auto", opacity: 1, y: 0 }}
+              exit={{ height: 0, opacity: 0, y: -20 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="mb-8 p-6 md:p-8 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-200 dark:border-white/10 shadow-inner">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-navy-900 dark:text-white flex items-center">
+                    {editingId ? <Edit2 className="w-5 h-5 mr-2 text-gold-500" /> : <Plus className="w-5 h-5 mr-2 text-gold-500" />}
+                    {editingId ? "Edit Course Details" : "Create New Course"}
+                  </h3>
+                  <button onClick={cancelEdit} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Course Code</label>
+                    <input
+                      type="text"
+                      value={formData.code}
+                      onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                      className="w-full p-3 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-slate-900 text-navy-900 dark:text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-shadow"
+                      placeholder="e.g. CS101"
+                    />
+                  </div>
+                  <div className="lg:col-span-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Course Title</label>
+                    <input
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      className="w-full p-3 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-slate-900 text-navy-900 dark:text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-shadow"
+                      placeholder="e.g. Intro to Computer Science"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Credits</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="6"
+                      value={formData.credits}
+                      onChange={(e) => setFormData({ ...formData, credits: parseInt(e.target.value) || 0 })}
+                      className="w-full p-3 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-slate-900 text-navy-900 dark:text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-shadow"
+                    />
+                  </div>
+                  <div className="md:col-span-2 lg:col-span-4">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Department</label>
+                    <select
+                      value={formData.departmentId}
+                      onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
+                      className="w-full p-3 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-slate-900 text-navy-900 dark:text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-shadow appearance-none"
+                    >
+                      <option value="">Select a department...</option>
+                      {departments.map(d => (
+                        <option key={d.id} value={d.id}>{d.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="md:col-span-2 lg:col-span-4">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Prerequisites</label>
+                    <input
+                      type="text"
+                      value={formData.prerequisites}
+                      onChange={(e) => setFormData({ ...formData, prerequisites: e.target.value })}
+                      className="w-full p-3 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-slate-900 text-navy-900 dark:text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-shadow"
+                      placeholder="e.g. CS100 or equivalent"
+                    />
+                  </div>
+                  <div className="md:col-span-2 lg:col-span-4">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Learning Outcomes</label>
+                    <textarea
+                      value={formData.learningOutcomes}
+                      onChange={(e) => setFormData({ ...formData, learningOutcomes: e.target.value })}
+                      className="w-full p-3 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-slate-900 text-navy-900 dark:text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-shadow min-h-[100px]"
+                      placeholder="List the learning outcomes..."
+                    />
+                  </div>
+                  <div className="md:col-span-2 lg:col-span-4">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Course Description & Syllabus</label>
+                    <div className="bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 focus-within:ring-2 focus-within:ring-gold-500 transition-shadow">
+                      <ReactQuill 
+                        theme="snow" 
+                        value={formData.description} 
+                        onChange={(val) => setFormData({ ...formData, description: val })}
+                        className="h-48 mb-12 text-navy-900 dark:text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-white/10">
+                  <button 
+                    onClick={cancelEdit} 
+                    className="px-6 py-2.5 text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <Magnetic intensity={0.1}>
+                    <button 
+                      onClick={handleSave} 
+                      disabled={!formData.code || !formData.title || !formData.departmentId} 
+                      className="px-8 py-2.5 bg-gold-500 hover:bg-gold-400 text-navy-900 font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-lg hover:shadow-gold-500/30"
+                    >
+                      <Check className="w-5 h-5 mr-2" /> Save Changes
+                    </button>
+                  </Magnetic>
                 </div>
               </div>
-            </div>
-            <div className="flex justify-end space-x-2 mt-4">
-              <button onClick={cancelEdit} className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">Cancel</button>
-              <button onClick={handleSave} disabled={!formData.code || !formData.title || !formData.departmentId} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center">
-                <Check className="w-4 h-4 mr-2" /> Save
-              </button>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        {/* Data Table */}
+        <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 shadow-sm">
+          <table className="w-full text-left border-collapse bg-white dark:bg-slate-900/40">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                <th className="p-4 text-sm font-semibold text-slate-900 dark:text-slate-200">Code</th>
-                <th className="p-4 text-sm font-semibold text-slate-900 dark:text-slate-200">Title</th>
-                <th className="p-4 text-sm font-semibold text-slate-900 dark:text-slate-200">Department</th>
-                <th className="p-4 text-sm font-semibold text-slate-900 dark:text-slate-200">Credits</th>
-                <th className="p-4 text-sm font-semibold text-slate-900 dark:text-slate-200 text-right">Actions</th>
+              <tr className="bg-gray-50/80 dark:bg-slate-800/80 border-b border-gray-200 dark:border-white/10">
+                <th className="px-6 py-4 text-xs font-bold text-navy-900 dark:text-gray-300 uppercase tracking-wider">Code</th>
+                <th className="px-6 py-4 text-xs font-bold text-navy-900 dark:text-gray-300 uppercase tracking-wider">Title</th>
+                <th className="px-6 py-4 text-xs font-bold text-navy-900 dark:text-gray-300 uppercase tracking-wider">Department</th>
+                <th className="px-6 py-4 text-xs font-bold text-navy-900 dark:text-gray-300 uppercase tracking-wider">Credits</th>
+                <th className="px-6 py-4 text-xs font-bold text-navy-900 dark:text-gray-300 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100 dark:divide-white/5">
               {filteredCourses.map((course) => (
-                <tr key={course.id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <td className="p-4 text-sm font-medium text-indigo-600 dark:text-indigo-400">{course.code}</td>
-                  <td className="p-4 text-sm font-semibold text-slate-900 dark:text-slate-200">{course.title}</td>
-                  <td className="p-4 text-sm text-slate-600 dark:text-slate-400">{getDepartmentName(course.departmentId)}</td>
-                  <td className="p-4 text-sm text-slate-600 dark:text-slate-400">{course.credits}</td>
-                  <td className="p-4 text-sm text-right">
+                <tr key={course.id} className="course-row group hover:bg-gold-50/30 dark:hover:bg-white/5 transition-colors">
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-gray-100 text-gray-800 dark:bg-white/10 dark:text-gray-200 group-hover:bg-gold-500 group-hover:text-navy-900 transition-colors">
+                      {course.code}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm font-bold text-navy-900 dark:text-white group-hover:text-gold-600 dark:group-hover:text-gold-400 transition-colors">
+                    {course.title}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 font-medium">
+                    {getDepartmentName(course.departmentId)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 font-medium">
+                    {course.credits}
+                  </td>
+                  <td className="px-6 py-4 text-right">
                     <div className="flex justify-end space-x-2">
-                      <button onClick={() => startEdit(course)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-md transition-colors"><Edit2 className="w-4 h-4" /></button>
-                      <button onClick={() => handleDelete(course.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors"><Trash2 className="w-4 h-4" /></button>
+                      <button 
+                        onClick={() => startEdit(course)} 
+                        className="p-2 text-gray-400 hover:text-gold-500 hover:bg-gold-50 dark:hover:bg-gold-500/10 rounded-lg transition-all group/btn"
+                        title="Edit Course"
+                      >
+                        <Edit2 className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(course.id)} 
+                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all group/btn"
+                        title="Delete Course"
+                      >
+                        <Trash2 className="w-4 h-4 transition-transform group-hover/btn:rotate-12 group-hover/btn:scale-110" />
+                      </button>
                     </div>
                   </td>
                 </tr>
               ))}
+              
+              {/* Empty State */}
               {filteredCourses.length === 0 && !isAdding && !editingId && (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-slate-500 dark:text-slate-400">
-                    {searchQuery ? "No courses match your search." : "No courses found. Click \"Add Course\" to create one."}
+                  <td colSpan={5} className="px-6 py-16 text-center">
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-slate-800 flex items-center justify-center mb-2">
+                        <BookOpen className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">
+                        {searchQuery ? "No courses match your search." : "Your course catalog is empty."}
+                      </p>
+                      {searchQuery ? (
+                        <button onClick={() => setSearchQuery("")} className="text-gold-500 font-bold hover:underline">Clear Search</button>
+                      ) : (
+                        <button onClick={() => setIsAdding(true)} className="text-gold-500 font-bold hover:underline">Add your first course</button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               )}

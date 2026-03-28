@@ -110,7 +110,7 @@ export function Header() {
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-xl md:text-2xl text-navy-900 dark:text-white leading-none tracking-tight">
-                  B.M.S. <span className="text-gold-500">College of Engineering</span>
+                  BMSCE
                 </span>
                 <span className="text-[8px] md:text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-[0.2em] font-bold mt-1">Autonomous Institute • Estd. 1946</span>
               </div>

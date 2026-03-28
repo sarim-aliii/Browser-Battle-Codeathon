@@ -167,7 +167,7 @@ export function LoginPage() {
         
         <h1 className="text-[28px] font-medium text-[#0a2351] dark:text-white mb-1">{title}</h1>
         <p className="text-[#8e9cae] dark:text-gray-400 mb-8 text-[15px]">
-          login into BMSCE campus
+          
         </p>
 
         <form onSubmit={handleLogin} className="space-y-5">

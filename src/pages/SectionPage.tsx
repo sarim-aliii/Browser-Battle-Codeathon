@@ -7,18 +7,9 @@ import { ChevronRight, Share2, Printer, BookOpen, Clock } from 'lucide-react';
 import { sectionsData } from '../data/sectionsData';
 import { motion, AnimatePresence, useScroll, useSpring } from 'motion/react';
 
+// Main exported page component (Handles Validation)
 export function SectionPage() {
   const { category, section } = useParams<{ category: string; section: string }>();
-  const location = useLocation();
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [readTime, setReadTime] = useState(0);
-
-  // Scroll Progress Hook
-  const { scrollYProgress } = useScroll({
-    target: contentRef,
-    offset: ["start start", "end end"]
-  });
-  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   if (!category || !(sectionsData as any)[category]) {
     return <Navigate to="/" replace />;
@@ -31,20 +22,34 @@ export function SectionPage() {
     ? categoryData.items.find((s: any) => s.id === section) 
     : categoryData.items[0];
 
+  // If the user navigates to a specific section that doesn't exist, redirect to the first item safely
   if (!currentSection && section) {
     return <Navigate to={`/${category}/${categoryData.items[0].id}`} replace />;
   }
 
+  // Only render the hook-heavy content when data is guaranteed to exist
+  return <SectionContent categoryData={categoryData} currentSection={currentSection} category={category} />;
+}
+
+// Inner component (Handles Hooks and UI)
+function SectionContent({ categoryData, currentSection, category }: { categoryData: any, currentSection: any, category: string }) {
+  const location = useLocation();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [readTime, setReadTime] = useState(0);
+
+  // Scroll Progress Hook
+  const { scrollYProgress } = useScroll({
+    target: contentRef,
+    offset: ["start start", "end end"]
+  });
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+
   // Calculate rough reading time when section changes
   useEffect(() => {
-    // Scroll to top when section changes
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Simulate reading time calculation (assuming ~200 words per minute)
-    // In a real app, you'd calculate this based on the actual text content of the ReactNode
     const estimatedWords = 400 + Math.random() * 600; 
     setReadTime(Math.ceil(estimatedWords / 200));
-  }, [section]);
+  }, [currentSection.id]);
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -69,7 +74,6 @@ export function SectionPage() {
       
       {/* Premium Page Header */}
       <div className="relative bg-navy-900 py-16 border-t border-navy-800 overflow-hidden">
-        {/* Abstract shapes for premium feel */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-gold-500/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none" />
         
@@ -120,7 +124,6 @@ export function SectionPage() {
                           : 'text-gray-600 dark:text-gray-400 hover:text-navy-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-slate-800/50'
                       }`}
                     >
-                      {/* Animated Active Background */}
                       {isActive && (
                         <motion.div 
                           layoutId="activeSectionBg"
@@ -152,7 +155,6 @@ export function SectionPage() {
 
             <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
               
-              {/* Content Header & Actions */}
               <div className="px-8 py-6 border-b border-gray-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 bg-gray-50/50 dark:bg-slate-800/20">
                 <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 font-medium">
                   <Clock className="w-4 h-4 mr-2" />
@@ -180,9 +182,7 @@ export function SectionPage() {
                     transition={{ duration: 0.3, ease: "easeOut" }}
                     className="prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 prose-headings:font-display prose-headings:text-navy-900 dark:prose-headings:text-white prose-a:text-gold-600 hover:prose-a:text-gold-500 prose-img:rounded-2xl prose-img:shadow-lg"
                   >
-                    {/* Inject a title if the content doesn't explicitly start with one */}
                     <h2 className="text-3xl font-bold mb-8 border-b border-gray-100 dark:border-slate-800 pb-4">{currentSection?.title}</h2>
-                    
                     {currentSection?.content}
                   </motion.div>
                 </AnimatePresence>

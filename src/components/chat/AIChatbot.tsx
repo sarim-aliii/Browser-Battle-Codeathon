@@ -60,9 +60,11 @@ export function AIChatbot() {
     setIsLoading(true);
 
     try {
-      const history = messages.map(m => ({
-        role: m.role,
-        parts: [{ text: m.text }]
+      const history = messages
+        .filter(m => m.id !== "1") 
+        .map(m => ({
+          role: m.role,
+          parts: [{ text: m.text }]
       }));
       
       // Inject language instruction without showing it in the user's chat bubble

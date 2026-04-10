@@ -1792,7 +1792,7 @@ export const sectionsData: Record<string, {
           <div className="space-y-6">
             <h2 className="text-3xl font-bold text-navy-900 dark:text-white border-b pb-4">Advanced Skill Labs</h2>
             <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-              To bridge the gap between academia and industry, BMSCE has established several advanced skill labs in collaboration with leading technology companies.
+              To bridge the gap between academia and industry, BMSCE has established several advanced skill labs in collaboration with leading technology companies. Explore the specific labs using the sidebar.
             </p>
             <div className="grid sm:grid-cols-2 gap-6 mt-6">
               {[
@@ -1806,6 +1806,90 @@ export const sectionsData: Record<string, {
                   <p className="text-gray-600 dark:text-gray-400">In collaboration with <span className="font-semibold text-gold-600 dark:text-gold-400">{lab.partner}</span></p>
                 </div>
               ))}
+            </div>
+          </div>
+        ) 
+      },
+      { 
+        id: 'iot-embedded-systems', 
+        title: 'IoT & Embedded Systems Lab', 
+        icon: Network, 
+        content: (
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-navy-900 dark:text-white border-b pb-4">IoT & Embedded Systems Lab</h2>
+            <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              Established in partnership with <strong>Texas Instruments</strong>, this lab provides students hands-on experience in building smart, connected devices.
+            </p>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 mt-6">
+              <h3 className="text-xl font-bold text-navy-900 dark:text-white mb-4">Equipment & Capabilities</h3>
+              <ul className="space-y-3 text-gray-600 dark:text-gray-400">
+                <li className="flex items-start"><CheckCircle className="w-5 h-5 text-gold-500 mr-2 mt-0.5 shrink-0" /> 50+ Texas Instruments MSP430 and LaunchPad evaluation kits.</li>
+                <li className="flex items-start"><CheckCircle className="w-5 h-5 text-gold-500 mr-2 mt-0.5 shrink-0" /> Advanced sensor networks for Smart Agriculture and Smart City prototypes.</li>
+                <li className="flex items-start"><CheckCircle className="w-5 h-5 text-gold-500 mr-2 mt-0.5 shrink-0" /> Wireless communication modules including LoRa, Zigbee, and Bluetooth Low Energy.</li>
+              </ul>
+            </div>
+          </div>
+        ) 
+      },
+      { 
+        id: 'cloud-computing', 
+        title: 'Cloud Computing Lab', 
+        icon: Globe, 
+        content: (
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-navy-900 dark:text-white border-b pb-4">Cloud Computing Lab</h2>
+            <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              Powered by our partnership with the <strong>AWS Academy</strong>, this lab prepares students for the rapid shift to cloud-native application development.
+            </p>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 mt-6">
+              <h3 className="text-xl font-bold text-navy-900 dark:text-white mb-4">Focus Areas</h3>
+              <ul className="space-y-3 text-gray-600 dark:text-gray-400">
+                <li className="flex items-start"><CheckCircle className="w-5 h-5 text-gold-500 mr-2 mt-0.5 shrink-0" /> Cloud Architecture design using AWS EC2, S3, and Lambda.</li>
+                <li className="flex items-start"><CheckCircle className="w-5 h-5 text-gold-500 mr-2 mt-0.5 shrink-0" /> Containerization orchestration using Docker and Kubernetes.</li>
+                <li className="flex items-start"><CheckCircle className="w-5 h-5 text-gold-500 mr-2 mt-0.5 shrink-0" /> Preparation tracks for the AWS Certified Solutions Architect exam.</li>
+              </ul>
+            </div>
+          </div>
+        ) 
+      },
+      { 
+        id: 'robotics-automation', 
+        title: 'Robotics & Automation Lab', 
+        icon: Target, 
+        content: (
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-navy-900 dark:text-white border-b pb-4">Robotics & Automation Lab</h2>
+            <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              In collaboration with industrial robotics leader <strong>ABB</strong>, this facility exposes engineering students to factory-grade robotics and automation workflows.
+            </p>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 mt-6">
+              <h3 className="text-xl font-bold text-navy-900 dark:text-white mb-4">Lab Highlights</h3>
+              <ul className="space-y-3 text-gray-600 dark:text-gray-400">
+                <li className="flex items-start"><CheckCircle className="w-5 h-5 text-gold-500 mr-2 mt-0.5 shrink-0" /> 6-axis industrial ABB robotic arms for pick-and-place and welding simulations.</li>
+                <li className="flex items-start"><CheckCircle className="w-5 h-5 text-gold-500 mr-2 mt-0.5 shrink-0" /> Programmable Logic Controller (PLC) training rigs.</li>
+                <li className="flex items-start"><CheckCircle className="w-5 h-5 text-gold-500 mr-2 mt-0.5 shrink-0" /> Computer Integrated Manufacturing (CIM) systems.</li>
+              </ul>
+            </div>
+          </div>
+        ) 
+      },
+      { 
+        id: 'data-science-ai', 
+        title: 'Data Science & AI Lab', 
+        icon: BarChart, 
+        content: (
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-navy-900 dark:text-white border-b pb-4">Data Science & AI Lab</h2>
+            <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              Supported by <strong>IBM</strong>, this high-performance computing laboratory provides the hardware required for complex deep learning models and big data analysis.
+            </p>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 mt-6">
+              <h3 className="text-xl font-bold text-navy-900 dark:text-white mb-4">Resources</h3>
+              <ul className="space-y-3 text-gray-600 dark:text-gray-400">
+                <li className="flex items-start"><CheckCircle className="w-5 h-5 text-gold-500 mr-2 mt-0.5 shrink-0" /> Equipped with 40+ high-end workstations with dedicated NVIDIA GPUs.</li>
+                <li className="flex items-start"><CheckCircle className="w-5 h-5 text-gold-500 mr-2 mt-0.5 shrink-0" /> Access to IBM Watson analytics platforms.</li>
+                <li className="flex items-start"><CheckCircle className="w-5 h-5 text-gold-500 mr-2 mt-0.5 shrink-0" /> Clusters configured for Apache Hadoop and Spark processing.</li>
+              </ul>
             </div>
           </div>
         ) 

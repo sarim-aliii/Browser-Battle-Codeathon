@@ -13,6 +13,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { AboutPage } from "./pages/AboutPage";
 import { SectionPage } from "./pages/SectionPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import PlacementDashboard from "./pages/PlacementDashboard";
 import AdminRoute from "./components/layout/AdminRoute";
 import { AuthProvider } from "./lib/AuthContext";
 import { ThemeProvider } from "./lib/ThemeContext";
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/courses/:id" element={<CourseDetailPage />} />
             <Route path="/:category" element={<SectionPage />} />
             <Route path="/:category/:section" element={<SectionPage />} />
+            <Route path="/placement" element={<PlacementDashboard />} />
             
             {/* Protected Admin Routes */}
             <Route element={<AdminRoute />}>
